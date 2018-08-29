@@ -73,11 +73,16 @@
         },
         filters: {
             text: function (data) {
-                if (data.join) {
+                if (data && data.join) {
                     return data.join(', ');
                 }
 
                 return data;
+            }
+        },
+        watch: {
+            config: function () {
+                document.title = this.config.title;
             }
         },
         mounted: function () {
