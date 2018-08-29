@@ -1,0 +1,30 @@
+{
+  "title": "Angelina Korshunova",
+  "subtitle": [
+    "architect",
+    "designer",
+    "alcoholic"
+  ],
+  "socials": [
+    {
+      "title": "E-mail",
+      "link": "mailto:Korshunovaangelina@gmail.com",
+      "icon": "fa-envelope"
+    },
+    {
+      "title": "telegram",
+      "link": "//t.me/korshunovaangelina",
+      "icon": "fa-telegram"
+    },
+    {
+      "title": "instagram",
+      "link": "//instagram.com/_korshunovaangelina_",
+      "icon": "fa-instagram"
+    },
+    {
+      "title": "vk",
+      "link": "//vk.com/id35025005",
+      "icon": "fa-vk"
+    }
+  ]
+}

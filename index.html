@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+    <!-- Fonts -->
+    <link rel="dns-prefetch" href="https://fonts.gstatic.com">
+    <link href="https://cdn.rawgit.com/tonsky/FiraCode/1.205/distr/fira_code.css"
+          rel="stylesheet" type="text/css">
+    <link href="https://fonts.googleapis.com/css?family=Raleway:300,400,600"
+          rel="stylesheet" type="text/css">
+    <link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css"
+          rel="stylesheet" type="text/css">
+    <!-- Styles -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bulma/0.7.1/css/bulma.min.css"
+          rel="stylesheet" type="text/css" crossorigin="anonymous">
+</head>
+<body>
+<div id="app">
+    <section class="hero is-light is-fullheight">
+        <div class="hero-body">
+            <div class="container has-text-centered">
+                <p class="title">{{ config.title }}</p>
+                <p class="subtitle">{{ config.subtitle | text }}</p>
+            </div>
+        </div>
+
+        <div class="hero-foot">
+            <nav class="tabs is-boxed is-fullwidth">
+                <div class="container">
+                    <ul>
+                        <li v-for="social in config.socials" :title="social.title">
+                            <a :href="social.link" target="_blank">
+                                <i class="fa fa-fw fa-lg" :class="[ social.icon ]"></i>
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </nav>
+        </div>
+    </section>
+</div>
+<script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+<script>
+    new Vue({
+        el: "#app",
+        data: function () {
+            return {
+                config: {}
+            };
+        },
+        methods: {
+            load: function () {
+                var self = this;
+
+                axios
+                    .get("config.json", {
+                        responseType: 'json',
+                    })
+                    .then(function (response) {
+                        if (response.data) {
+                            self.config = response.data;
+                        } else {
+                            console.error({message: "Unknown error"});
+                        }
+                    })
+                    .catch(function (error) {
+                        console.log(error);
+                    });
+            }
+        },
+        filters: {
+            text: function (data) {
+                if (data.join) {
+                    return data.join(', ');
+                }
+
+                return data;
+            }
+        },
+        mounted: function () {
+            window.axios.defaults.headers.common = {
+                'X-Requested-With': 'XMLHttpRequest'
+            };
+
+            this.load();
+        }
+    });
+</script>
+</body>
+</html>
