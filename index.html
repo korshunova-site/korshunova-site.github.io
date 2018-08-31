@@ -22,13 +22,16 @@
         <div class="hero-body">
             <div class="container has-text-centered">
                 <p class="title">{{ config.title }}</p>
-                <p class="subtitle">{{ config.subtitle | text }}</p>
-            </div>
-        </div>
+                <div class="subtitle" v-if="config.cursor">I'm
+                    <div style="min-width: 105px; display: inline-block; text-align: left">
+                        {{ IAmText | withCursor }}
+                    </div>
+                </div>
+                <p class="subtitle" v-else>
+                    {{ config.subtitle | text }}
+                </p>
 
-        <div class="hero-foot">
-            <nav class="tabs is-boxed is-fullwidth">
-                <div class="container">
+                <div class="tabs is-centered">
                     <ul>
                         <li v-for="social in config.socials" :title="social.title">
                             <a :href="social.link" target="_blank">
@@ -37,7 +40,7 @@
                         </li>
                     </ul>
                 </div>
-            </nav>
+            </div>
         </div>
     </section>
 </div>
@@ -48,7 +51,10 @@
         el: "#app",
         data: function () {
             return {
-                config: {}
+                config: {},
+                startTime: +new Date,
+                currentTime: +new Date,
+                textSpeed: 200
             };
         },
         methods: {
@@ -78,6 +84,39 @@
                 }
 
                 return data;
+            },
+            withCursor: function (string) {
+                var cursor = Math.floor(+new Date / 500) % 2 ? ' ' : '|';
+
+                return string + cursor;
+            },
+        },
+        computed: {
+            /**
+             *
+             * @returns {string}
+             */
+            IAmText: function () {
+                var sleep = 10,
+                    words = (this.config.subtitle || ['']),
+                    length = words.join(''.padEnd(sleep)).length + sleep,
+                    iteration = Math.floor((this.currentTime - this.startTime) / this.textSpeed) % length,
+                    word = 0,
+                    prev = 0,
+                    pos = 0;
+
+                while (true) {
+                    if (prev <= iteration && iteration <= prev + words[word].length + sleep) {
+                        pos = iteration - prev;
+                        if (pos < words[word].length) {
+                            return words[word].slice(0, pos);
+                        } else {
+                            return words[word];
+                        }
+                    }
+                    prev = (prev + words[word].length + sleep) % length;
+                    word = (word + 1) % words.length;
+                }
             }
         },
         watch: {
@@ -91,6 +130,13 @@
             };
 
             this.load();
+        },
+        created: function () {
+            var self = this;
+
+            setInterval(function () {
+                self.currentTime = +new Date;
+            }, this.textSpeed);
         }
     });
 </script>
