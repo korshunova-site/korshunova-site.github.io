@@ -21,14 +21,17 @@
     <section class="hero is-light is-fullheight">
         <div class="hero-body">
             <div class="container has-text-centered">
-                <p class="title">{{ config.title }}</p>
-                <div class="subtitle" v-if="config.cursor">I'm
-                    <div style="min-width: 105px; display: inline-block; text-align: left">
-                        {{ IAmText | withCursor }}
+                <p class="title">{{ config.title | i18n(lang) }}</p>
+                <div class="subtitle" v-if="config.cursor">{{ iam | i18n(lang) }}
+                    <div style="display: inline-block; position: relative">
+                        <div style="display: inline-block; opacity: 0;">{{ longestIAmText }}</div>
+                        <div style="display: inline-block; text-align: left; position: absolute; top:0; left: 0;">
+                            {{ IAmText | withCursor }}
+                        </div>
                     </div>
                 </div>
                 <p class="subtitle" v-else>
-                    {{ config.subtitle | text }}
+                    {{ config.subtitle | i18n(lang) | text }}
                 </p>
 
                 <div class="tabs is-centered">
@@ -51,6 +54,7 @@
         el: "#app",
         data: function () {
             return {
+                lang: (navigator.language || navigator.userLanguage || 'en').slice(0, 2),
                 config: {},
                 startTime: +new Date,
                 currentTime: +new Date,
@@ -90,15 +94,24 @@
 
                 return string + cursor;
             },
+            i18n: function (array, lang) {
+                array = array || [];
+                lang = lang || this.lang;
+
+                if (array[lang]) {
+                    return array[lang]
+                } else {
+                    return 'xyu';
+                }
+            }
         },
         computed: {
             /**
-             *
              * @returns {string}
              */
             IAmText: function () {
                 var sleep = 10,
-                    words = (this.config.subtitle || ['']),
+                    words = (this.config.subtitle[this.lang] || ['']),
                     length = words.join(''.padEnd(sleep)).length + sleep,
                     iteration = Math.floor((this.currentTime - this.startTime) / this.textSpeed) % length,
                     word = 0,
@@ -117,11 +130,40 @@
                     prev = (prev + words[word].length + sleep) % length;
                     word = (word + 1) % words.length;
                 }
+            },
+            /**
+             * @returns {string}
+             */
+            longestIAmText: function () {
+                var $words = (this.config.subtitle[this.lang] || ['']),
+                    $res = '|';
+
+                for (var $key = 0, $word; $word = $words[$key]; $key++) {
+                    console.log($word);
+                    if ($word.length + 1 > $res.length) {
+                        $res = $word + "|";
+                    }
+                }
+
+                return $res;
+            },
+            /**
+             * @returns {object}
+             */
+            iam: function () {
+                return {
+                    "en": "I'm",
+                    "ru": "Я"
+                };
             }
         },
         watch: {
             config: function () {
-                document.title = this.config.title;
+                if (this.config && this.config.title && this.config.title[this.lang]) {
+                    document.title = this.config.title[this.lang];
+                } else {
+                    document.title = 'xyu';
+                }
             }
         },
         mounted: function () {

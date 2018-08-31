@@ -1,10 +1,20 @@
 {
-  "title": "Angelika Korshunova",
-  "subtitle": [
-    "architect",
-    "designer",
-    "alcoholic (:"
-  ],
+  "title": {
+    "en": "Angelika Korshunova",
+    "ru": "Ангелика Коршунова"
+  },
+  "subtitle": {
+    "en": [
+      "architect",
+      "designer",
+      "alcoholic (:"
+    ],
+    "ru": [
+      "архитектор",
+      "дизайнер",
+      "алкоголик (:"
+    ]
+  },
   "cursor": true,
   "socials": [
     {
