@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Почему бы и нет</title>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+    <!-- Fonts -->
+    <link rel="dns-prefetch" href="https://fonts.gstatic.com">
+    <link href="https://cdn.rawgit.com/tonsky/FiraCode/1.205/distr/fira_code.css"
+          rel="stylesheet" type="text/css">
+    <link href="https://fonts.googleapis.com/css?family=Raleway:300,400,600"
+          rel="stylesheet" type="text/css">
+    <link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css"
+          rel="stylesheet" type="text/css">
+    <!-- Styles -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bulma/0.7.1/css/bulma.min.css"
+          rel="stylesheet" type="text/css" crossorigin="anonymous">
+</head>
+<body>
+<div id="app">
+    <section class="hero is-light is-fullheight">
+        <div class="hero-body">
+            <div class="container has-text-centered">
+                <p class="title">{{ date | day }}</p>
+                <p class="subtitle">{{ date | slogan(slogans) }}</p>
+            </div>
+        </div>
+    </section>
+</div>
+<script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+<script>
+    new Vue({
+        el: "#app",
+        data: function () {
+            return {
+                date: new Date,
+                slogans: []
+            };
+        }, methods: {
+            load: function () {
+                var self = this;
+
+                axios
+                    .get("slogans.json", {
+                        responseType: "json",
+                    })
+                    .then(function (response) {
+                        if (response.data) {
+                            self.slogans = response.data;
+                        } else {
+                            console.error({message: "Unknown error"});
+                        }
+                    })
+                    .catch(function (error) {
+                        console.log(error);
+                    });
+            }
+        },
+        filters: {
+            day: function (date) {
+                return [
+                    "Понедельник",
+                    "Вторник",
+                    "Среда",
+                    "Четверг",
+                    "Пятница",
+                    "Суббота",
+                    "Воскресенье"
+                ][date.getDay() - 1];
+            },
+            slogan: function (date, weekSlogans) {
+                console.log(weekSlogans, date);
+                var day = date.getDay() - 1,
+                    slogans = weekSlogans[day] || [],
+                    currentDate = new Date(
+                        date.getFullYear(),
+                        date.getMonth(),
+                        date.getDate()
+                    ),
+                    newYearDate = new Date(
+                        date.getFullYear(),
+                        0
+                    ),
+                    diffDates = (currentDate - newYearDate),
+                    weekNumber = Math.floor(diffDates / 864e5 / 7);
+
+                if (slogans.length) {
+                    return slogans[weekNumber % slogans.length];
+                }
+
+                return "";
+            }
+        },
+        mounted: function () {
+            window.axios.defaults.headers.common = {
+                "X-Requested-With": "XMLHttpRequest"
+            };
+
+            this.load();
+        },
+        created: function () {
+            document.title = (new Date).getDay() === 7 ? "К сожалению нет" : "Почему бы и нет";
+        }
+    });
+</script>
+</body>
+</html>
