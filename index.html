@@ -4,6 +4,8 @@
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+    <!-- Title -->
+    <title>Angelina Korshunova</title>
     <!-- Fonts -->
     <link rel="dns-prefetch" href="https://fonts.gstatic.com">
     <link href="https://cdn.rawgit.com/tonsky/FiraCode/1.205/distr/fira_code.css"
@@ -21,27 +23,17 @@
     <section class="hero is-light is-fullheight">
         <div class="hero-body">
             <div class="container has-text-centered">
-                <p class="title">{{ config.title | i18n(lang) }}</p>
-                <div class="subtitle" v-if="config.cursor">{{ iam | i18n(lang) }}
-                    <div style="display: inline-block; position: relative">
-                        <div style="display: inline-block; opacity: 0;">{{ longestIAmText }}</div>
-                        <div style="display: inline-block; text-align: left; position: absolute; top:0; left: 0;">
-                            {{ IAmText | withCursor }}
-                        </div>
-                    </div>
+                <div class="title">
+                    <k-title :dict="config.title"></k-title>
+                    <noscript>Angelina Korshunova</noscript>
                 </div>
-                <p class="subtitle" v-else>
-                    {{ config.subtitle | i18n(lang) | text }}
-                </p>
+                <div class="subtitle">
+                    <k-subtitle :dict="config.subtitle"></k-subtitle>
+                    <noscript>architect, designer, alcoholic</noscript>
+                </div>
 
                 <div class="tabs is-centered">
-                    <ul>
-                        <li v-for="social in config.socials" :title="social.title">
-                            <a :href="social.link" target="_blank">
-                                <i class="fa fa-fw fa-lg" :class="[ social.icon ]"></i>
-                            </a>
-                        </li>
-                    </ul>
+                    <k-socials :list="config.socials"></k-socials>
                 </div>
             </div>
         </div>
@@ -50,15 +42,72 @@
 <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
 <script>
+    Vue.component("k-title", {
+        "props": [
+            "dict"
+        ],
+        "data": function () {
+            return {
+                "lang": (navigator.language || navigator.userLanguage || "en").slice(0, 2),
+            };
+        },
+        "computed": {
+            "title": function () {
+                return this.dict ? this.dict[this.lang] || this.dict["en"] : "Angelina Korshunova";
+            }
+        },
+        "template": "<span>{{ title }}</span>"
+    });
+    Vue.component("k-subtitle", {
+        "props": [
+            "dict"
+        ],
+        "data": function () {
+            return {
+                "lang": (navigator.language || navigator.userLanguage || "en").slice(0, 2),
+            };
+        },
+        "computed": {
+            "sudtitle": function () {
+                var lang = this.lang,
+                    dict = this.dict || [
+                        {"en": "architect"},
+                        {"en": "designer"},
+                        {"en": "alcoholic"}
+                    ];
+
+                return dict.map(function ($item) {
+                    return $item[lang] ? $item[lang] : $item["en"];
+                }).join(", ");
+            }
+        },
+        "template": "<span>{{ sudtitle }}</span>"
+    });
+    Vue.component("k-socials", {
+        "props": [
+            "list"
+        ],
+        "computed": {
+            "socials": function () {
+                return this.list || [];
+            }
+        },
+        "template": `
+            <ul>
+                <li v-for="social in socials" :title="social.title">
+                    <a :href="social.link" target="_blank">
+                        <i class="fa fa-fw fa-lg" :class="[ social.icon ]"></i>
+                    </a>
+                </li>
+            </ul>
+        `
+    });
     new Vue({
         el: "#app",
         data: function () {
             return {
-                lang: (navigator.language || navigator.userLanguage || 'en').slice(0, 2),
-                config: {},
-                startTime: +new Date,
-                currentTime: +new Date,
-                textSpeed: 200
+                "lang": (navigator.language || navigator.userLanguage || "en").slice(0, 2),
+                "config": {}
             };
         },
         methods: {
@@ -67,7 +116,7 @@
 
                 axios
                     .get("config.json", {
-                        responseType: 'json',
+                        responseType: "json",
                     })
                     .then(function (response) {
                         if (response.data) {
@@ -81,104 +130,33 @@
                     });
             }
         },
-        filters: {
-            text: function (data) {
-                if (data && data.join) {
-                    return data.join(', ');
-                }
-
-                return data;
-            },
-            withCursor: function (string) {
-                var cursor = Math.floor(+new Date / 500) % 2 ? ' ' : '|';
-
-                return string + cursor;
-            },
-            i18n: function (array, lang) {
-                array = array || [];
-                lang = lang || this.lang;
-
-                if (array[lang]) {
-                    return array[lang]
-                } else {
-                    return 'xyu';
-                }
-            }
-        },
-        computed: {
-            /**
-             * @returns {string}
-             */
-            IAmText: function () {
-                var sleep = 10,
-                    words = (this.config.subtitle[this.lang] || ['']),
-                    length = words.join(''.padEnd(sleep)).length + sleep,
-                    iteration = Math.floor((this.currentTime - this.startTime) / this.textSpeed) % length,
-                    word = 0,
-                    prev = 0,
-                    pos = 0;
-
-                while (true) {
-                    if (prev <= iteration && iteration <= prev + words[word].length + sleep) {
-                        pos = iteration - prev;
-                        if (pos < words[word].length) {
-                            return words[word].slice(0, pos);
-                        } else {
-                            return words[word];
-                        }
-                    }
-                    prev = (prev + words[word].length + sleep) % length;
-                    word = (word + 1) % words.length;
-                }
-            },
-            /**
-             * @returns {string}
-             */
-            longestIAmText: function () {
-                var $words = (this.config.subtitle[this.lang] || ['']),
-                    $res = '|';
-
-                for (var $key = 0, $word; $word = $words[$key]; $key++) {
-                    console.log($word);
-                    if ($word.length + 1 > $res.length) {
-                        $res = $word + "|";
-                    }
-                }
-
-                return $res;
-            },
-            /**
-             * @returns {object}
-             */
-            iam: function () {
-                return {
-                    "en": "I'm",
-                    "ru": "Я"
-                };
-            }
-        },
         watch: {
             config: function () {
-                if (this.config && this.config.title && this.config.title[this.lang]) {
-                    document.title = this.config.title[this.lang];
+                var isDefault = !(
+                    this.config
+                    && this.config.title
+                    && this.config.title
+                    && (
+                        this.config.title[this.lang]
+                        && this.config.title["en"]
+                    )
+                );
+
+                if (isDefault) {
+                    document.title = "Angelina Korshunova";
                 } else {
-                    document.title = 'xyu';
+                    var title = this.config.title;
+
+                    document.title = title[this.lang] ? title[this.lang] : title["en"];
                 }
             }
         },
         mounted: function () {
             window.axios.defaults.headers.common = {
-                'X-Requested-With': 'XMLHttpRequest'
+                "X-Requested-With": "XMLHttpRequest"
             };
 
             this.load();
-        },
-        created: function () {
-            var self = this;
-
-            setInterval(function () {
-                self.currentTime = +new Date;
-            }, this.textSpeed);
         }
     });
 </script>
